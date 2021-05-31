@@ -27,9 +27,16 @@ var yAxisCall = d3.axisLeft().tickFormat(formatBillion);
 
 // Area generator
 // TODO: create the area generator.
-// The x coordinate will be the date of the data
-// while y0 and y1 will be in the 0 and 1 positions of the d element
+var a = d3.area()
+    .x((d) => {
+        return x(d.data.date);
+    })
+    .y0((d) =>
+        { return y(d[0]); })
+    .y1((d) =>
+        { return y(d[1]); });
 // TODO: create the stack
+var stack = d3.stack();
 
 // Axis groups
 var xAxis = g.append("g")
@@ -60,7 +67,7 @@ d3.csv('data/stacked_area2.csv').then((data) => {
     }));
 
     //TODO: obtain the keys array, remember to remove the first column
-    var keys = [];
+     var keys = data.columns.filter((key) => { return key !== 'date'; });
 
 	data.forEach((d) => {
 	    d.date = parseDate(d.date);
@@ -81,16 +88,58 @@ d3.csv('data/stacked_area2.csv').then((data) => {
     yAxis.call(yAxisCall.scale(y))
 
     // Add stacked area chart
+    stack.keys(keys)
+        .order(d3.stackOrderNone)
+        .offset(d3.stackOffsetNone);
+
     // TODO: finish the configuration of the stack object
     // by setting the keys, order and offset
+    var browser = g.selectAll('.browser')
+        .data(stack(data))
+        .enter().append('g')
+        .attr('class', (d) => { return 'browser ' + d.key; })
+        .attr('fill-opacity', 0.3);
 
     // TODO: bind the data to the stack and create the group
     // that will contain the area path
+    browser.append('path')
+        .attr('class', 'area')
+        .attr('d', a)
+        .style('fill', (d) => { return color(d.key); });
 
     // TODO: call the area generator with the appropriate data
-
     // Create legend
     // TODO: Create a legend showing all the names of every color
+     var legend = g.append("g")
+    .attr("transform", "translate(" + (width+150) + "," + (height - 210) + ")");
+
+      keys.reverse().forEach((country, i) => {
+    var legendRow = legend.append("g")
+        .attr("transform", "translate(0, " + (i * 20) + ")");
+
+    legendRow.append("rect")
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", color(country));
+
+    legendRow.append("text")
+        .attr("x", -10)
+        .attr("y", 10)
+        .attr("text-anchor", "end")
+        .style("text-transform", "capitalize")
+        .text(country)
+        .attr("fill", "#227C9D");
+
+    var bottomAxis = d3.axisBottom(x);
+	xAxis.call(bottomAxis)
+	.selectAll("text")
+	.attr("fill", "#227C9D");
+
+	var leftAxis = d3.axisLeft(y);
+	yAxis.call(leftAxis)
+		.selectAll("text")
+		.attr("fill", "#227C9D");
+    });
 
 }).catch((error) => {
     console.log(error);

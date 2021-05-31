@@ -1,3 +1,7 @@
+/*
+*    main.js
+*/
+
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
@@ -21,14 +25,20 @@ var xAxisCall = d3.axisBottom();
 var yAxisCall = d3.axisLeft();
 
 // Area generator
-// TODO create the area generator
+var a = d3.area()
+	.x((d) => { return x(d.date); })
+	.y0(y(0))
+	.y1((d) => { return y(d.close); });
 
 // Axis groups
 var xAxis = g.append("g")
 	.attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")");
+
 var yAxis =  g.append("g")
 	.attr("class", "y axis");
+
+
 
 // Y-Axis label
 yAxis.append("text")
@@ -55,8 +65,20 @@ d3.tsv("data/area.tsv").then((data) => {
     yAxis.call(yAxisCall.scale(y))
 
     // Add area chart
-    // TODO add the area path to the visualization
-   
+    g.append("path")
+        .attr("fill", "steelblue")
+        .attr("d", a(data));
+
+    var bottomAxis = d3.axisBottom(x);
+	xAxis.call(bottomAxis)
+	.selectAll("text")
+	.attr("fill", "#227C9D");
+
+	var leftAxis = d3.axisLeft(y);
+	yAxis.call(leftAxis)
+		.selectAll("text")
+		.attr("fill", "#227C9D");
+
 }).catch((error) => {
     console.log(error);
 });

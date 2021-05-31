@@ -1,9 +1,9 @@
 /*
-*    main_LoadingData.js
+*    main.js
 */
 
 var margin = { left:80, right:100, top:50, bottom:100 },
-    height = 500 - margin.top - margin.bottom, 
+    height = 500 - margin.top - margin.bottom,
     width = 800 - margin.left - margin.right;
 
 var svg = d3.select("#chart-area").append("svg")
@@ -11,7 +11,7 @@ var svg = d3.select("#chart-area").append("svg")
     .attr("height", height + margin.top + margin.bottom);
 
 var g = svg.append("g")
-    .attr("transform", "translate(" + margin.left + 
+    .attr("transform", "translate(" + margin.left +
         ", " + margin.top + ")");
 
 // Time parser for x-scale
@@ -35,7 +35,7 @@ var xAxis = g.append("g")
     .attr("transform", "translate(0," + height + ")");
 var yAxis = g.append("g")
     .attr("class", "y axis")
-    
+
 // Y-Axis label
 yAxis.append("text")
     .attr("class", "axis-title")
@@ -47,7 +47,9 @@ yAxis.append("text")
     .text("Population)");
 
 // Line path generator
-// TODO: Implement the line generator
+var line = d3.line()
+	.x((d) => { return x(d.year); })
+	.y((d) => { return y(d.value); });
 
 d3.json("data/example.json").then((data) => {
     // Data cleaning
@@ -57,14 +59,25 @@ d3.json("data/example.json").then((data) => {
     });
 
     // Set scale domains
-    // TODO: set domain of axes
+    x.domain(d3.extent(data, (d) => {
+        return d.year;
+    }));
+    var vEdges = d3.extent(data, (d) => {
+        return d.value;
+    })
+    y.domain([vEdges[0], vEdges[1]]);
 
     // Generate axes once scales have been set
     xAxis.call(xAxisCall.scale(x))
     yAxis.call(yAxisCall.scale(y))
 
     // Add line to chart
-    // TODO: add line path
+    g.append("path")
+        .attr("class", "line")
+        .attr("fill", "grey")
+        .attr("stroke", "black")
+        .attr("stroke-with", "3px")
+        .attr("d", line(data));
 
     /******************************** Tooltip Code ********************************/
 
@@ -111,4 +124,3 @@ d3.json("data/example.json").then((data) => {
     /******************************** Tooltip Code ********************************/
 
 });
-

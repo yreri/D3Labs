@@ -6,6 +6,10 @@ var margin = {left:100, right: 10, top: 10, bottom: 100};
 var width = 600;
 var height = 400;
 var interval;
+var formattedData = new Array();
+var years = new Array();
+var index = 0;
+var time = 0;
 
 var g = d3.select("#chart-area")
 					.append("svg")
@@ -91,7 +95,7 @@ var continents = new Array();
 d3.json("data/data.json").then((data) => {data.forEach((d, i)=>{
 				d.year = +d.year;
       });
-			const formattedData = data.map((year) => {
+ 			formattedData = data.map((year) => {
 				return year["countries"].filter((country) => {
 				var dataExists = (country.income && country.life_exp);
 				return dataExists;
@@ -102,7 +106,7 @@ d3.json("data/data.json").then((data) => {data.forEach((d, i)=>{
 				})
 			});
 
-			var years = data.map((d) => {return d.year;});
+			years = data.map((d) => {return d.year;});
 			var cont = formattedData[0].map((d) => {return d.continent;});
 			var continents = [...new Set(cont)];
 
@@ -127,20 +131,23 @@ d3.json("data/data.json").then((data) => {data.forEach((d, i)=>{
 			 });
 
  			var length = years.length;
- 			var index = 0;
+
 			d3.interval( ( )=>{
 				if (index >= length){
-					index = 0;
+
 				}
-				update(years[index], formattedData[index], continents);
+				update(years[index], formattedData[index]);
 				index++;
+
     	}, 500);
-			k++;
+
   }).catch((error)=>{console.log(error);});
 
-function update(year, data, continents){
+
+function update(year, data){
+
 	var label = year;
-  areaLabel.text(label);
+    areaLabel.text(label);
 
 	var circles = g.selectAll("circle")
 								 .data(data, (d) => { return d.country; });
@@ -171,22 +178,18 @@ function update(year, data, continents){
 }
 
 function step(){
-
-	update(years[k % years.length], formattedData[k % years.length], time);
-	console.log("Event Handlers Update...");
-	k += 1;
-
+	update(years[index], formattedData[index]);
+	index++;
 }
 
 $("#play-button").on("click", ( ) => {
+	var button = $("#play-button")
 
-	var button = $("#play-button");
 	if (button.text() == "Play"){
-		console.log("Play case");
 		button.text("Pause");
 		interval = setInterval(step, 1000);
-	} else if (button.text() == "Pause"){
-		console.log("Pause case");
+	}
+	else if (button.text() == "Pause"){
 		button.text("Play");
 		clearInterval(interval);
 	}
